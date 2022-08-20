@@ -18,15 +18,12 @@ locals {
 
 data "aws_caller_identity" "current" {}
 
-################################################################################
-# EKS Module
-################################################################################
 module "app_eks" {
   source = "../../modules/eks"
 
   eks_cluster_name   = local.name
   eks_version        = "1.22"
-  vpc_id             = module.vpc.vpc_id
+  vpc_id             = module.app_vpc.vpc_id
   eks_master_subnets = local.eks_master_subnets
   tags               = local.tags
 }

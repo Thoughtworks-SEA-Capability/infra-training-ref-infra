@@ -7,9 +7,9 @@ module "app_aurora_db" {
 
   db_name = local.db_name
   instance_class = "db.t3.medium"
-  vpc_id = module.vpc.vpc_id
-  database_subnet_group_name = module.vpc.database_subnet_group_name
-  database_subnets = module.vpc.database_subnets
+  vpc_id = module.app_vpc.vpc_id
+  database_subnet_group_name = module.app_vpc.database_subnet_group_name
+  database_subnets = module.app_vpc.database_subnets
   eks_security_group_ids = [module.app_eks.cluster_primary_security_group_id]
   tags = local.tags
 }
