@@ -15,3 +15,7 @@ variable "app_vpc" {
     database_subnets = list(string)
   })
 }
+
+variable "application-ns-name" {
+  type = string
+}

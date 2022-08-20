@@ -19,7 +19,7 @@ module "app_aurora_db" {
 resource "kubernetes_secret_v1" "app-a-rds-creds" {
   metadata {
     name = "app-a-db"
-    namespace = local.application-ns-name
+    namespace = var.application-ns-name
   }
   data = {
     db_name = module.app_aurora_db.cluster_database_name,

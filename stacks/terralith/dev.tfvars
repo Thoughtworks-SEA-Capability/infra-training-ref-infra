@@ -13,3 +13,7 @@ app_vpc = {
   ]
   database_subnets = ["10.0.114.0/26", "10.0.114.64/26","10.0.114.128/26"]
 }
+
+// This namespace name is agreed by convention between the infra and app layers
+// Changing the name will break the test and subsequently whatever application.
+application-ns-name = "application"
