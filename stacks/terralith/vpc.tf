@@ -15,8 +15,9 @@ module "app_vpc" {
 
   vpc_name = local.name
   vpc_cidr = "10.0.0.0/16"
-  tags = local.tags
+  vpc_details = var.app_vpc
 
+  tags = local.tags
 }
 
 locals {
