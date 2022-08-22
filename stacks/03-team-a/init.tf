@@ -2,7 +2,7 @@ terraform {
   backend "s3" {
     region = "ap-southeast-1"
     bucket = "infra-training-state-2022"
-    key = "merlion/dev/03-team-a"
+    key = "merlion/dev/03-team-a.json"
   }
 }
 
