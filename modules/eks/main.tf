@@ -170,6 +170,12 @@ resource "aws_iam_role" "eks-admin" {
   assume_role_policy = data.aws_iam_policy_document.assume-eks-admin.json
 }
 
+resource "aws_ssm_parameter" "eks_cluster_id" {
+  name  = "${var.eks_cluster_name}-eks-cluster-id"
+  type  = "String"
+  value = module.eks.cluster_id
+}
+
 data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "assume-eks-admin" {

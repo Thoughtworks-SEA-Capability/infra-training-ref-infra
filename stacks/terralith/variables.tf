@@ -6,16 +6,6 @@ variable "team_name" {
   description = "name of the pair or individual owning this stack"
 }
 
-variable "app_vpc" {
-  description = "Application vpc details"
-  type = object({
-    cidr = string
-    public_subnets = list(string)
-    private_subnets = list(string)
-    database_subnets = list(string)
-  })
-}
-
 variable "application-ns-name" {
   type = string
 }

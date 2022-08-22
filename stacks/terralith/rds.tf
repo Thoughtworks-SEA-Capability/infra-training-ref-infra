@@ -7,9 +7,9 @@ module "app_aurora_db" {
 
   db_name = local.db_name
   instance_class = "db.t3.medium"
-  vpc_id = module.app_vpc.vpc_id
-  database_subnet_group_name = module.app_vpc.database_subnet_group_name
-  database_subnets = module.app_vpc.database_subnets
+  vpc_id = data.aws_ssm_parameter.vpc_id.value
+  database_subnet_group_name = data.aws_ssm_parameter.database_subnet_group_name.value
+  database_subnets = split(",", data.aws_ssm_parameter.database_subnets.value)
   eks_security_group_ids = [module.app_eks.cluster_primary_security_group_id]
   tags = local.tags
 }
@@ -28,3 +28,17 @@ resource "kubernetes_secret_v1" "app-a-rds-creds" {
     db_password = module.app_aurora_db.cluster_master_password,
   }
 }
+
+data "aws_ssm_parameter" "vpc_id" {
+  name = "${local.name}-vpc-id"
+}
+
+data "aws_ssm_parameter" "database_subnets" {
+  name = "${local.name}-db"
+}
+
+data "aws_ssm_parameter" "database_subnet_group_name" {
+  name  = "${local.name}-db-sg-name"
+}
+
+
