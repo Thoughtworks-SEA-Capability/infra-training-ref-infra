@@ -8,15 +8,10 @@ module "app_eks" {
   tags               = local.tags
 }
 
-resource "kubernetes_namespace_v1" "application" {
-  metadata {
-    labels = merge(local.tags, {
-      owner = "terraform"
-    })
-    name = var.application-ns-name
-  }
-}
-
 data "aws_ssm_parameter" "private_subnets" {
   name = "${local.name}-private"
+}
+
+data "aws_ssm_parameter" "vpc_id" {
+  name = "${local.name}-vpc-id"
 }
