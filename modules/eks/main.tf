@@ -1,33 +1,9 @@
-data "aws_eks_cluster" "default" {
-  name = module.eks.cluster_id
-}
-
-data "aws_eks_cluster_auth" "default" {
-  name = module.eks.cluster_id
-}
-
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.default.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.default.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.default.token
-}
-
-locals {
-  cluster_version = "1.22"
-}
-
-data "aws_caller_identity" "current" {}
-
-################################################################################
-# EKS Module
-################################################################################
-
 module "eks" {
   source = "terraform-aws-modules/eks/aws"
   version = "18.26.2"
 
-  cluster_name                    = local.name
-  cluster_version                 = "1.22"
+  cluster_name                    = var.eks_cluster_name
+  cluster_version                 = var.eks_version
   cluster_endpoint_private_access = true
   cluster_endpoint_public_access  = true
 
@@ -48,15 +24,15 @@ module "eks" {
     resources        = ["secrets"]
   }]
 
-  cluster_tags = merge(local.tags, {
+  cluster_tags = merge(var.tags, {
     # This should not affect the name of the cluster primary security group
     # Ref: https://github.com/terraform-aws-modules/terraform-aws-eks/pull/2006
     # Ref: https://github.com/terraform-aws-modules/terraform-aws-eks/pull/2008
-    Name = local.name
+    Name = var.eks_cluster_name
   })
 
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = local.eks_master_subnets
+  vpc_id     = var.vpc_id
+  subnet_ids = var.eks_master_subnets
 
   manage_aws_auth_configmap = true
   aws_auth_roles = [
@@ -126,7 +102,7 @@ module "eks" {
 
   }
 
-  tags = local.tags
+  tags = var.tags
 }
 
 # References to resources that do not exist yet when creating a cluster will cause a plan failure due to https://github.com/hashicorp/terraform/issues/4149
@@ -156,7 +132,7 @@ module "vpc_cni_irsa" {
     }
   }
 
-  tags = local.tags
+  tags = var.tags
 }
 
 resource "aws_kms_key" "eks" {
@@ -164,11 +140,11 @@ resource "aws_kms_key" "eks" {
   deletion_window_in_days = 7
   enable_key_rotation     = true
 
-  tags = local.tags
+  tags = var.tags
 }
 
 resource "aws_iam_policy" "node_additional" {
-  name        = "${local.name}-additional"
+  name        = "${var.eks_cluster_name}-additional"
   description = "Example usage of node additional policy"
 
   policy = jsonencode({
@@ -184,15 +160,16 @@ resource "aws_iam_policy" "node_additional" {
     ]
   })
 
-  tags = local.tags
+  tags = var.tags
 }
 
-
 resource "aws_iam_role" "eks-admin" {
-  name = "${local.name}-eks-admin"
+  name = "${var.eks_cluster_name}-eks-admin"
   description = "Role to assume to administer the cluster"
   assume_role_policy = data.aws_iam_policy_document.assume-eks-admin.json
 }
+
+data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "assume-eks-admin" {
   version = "2012-10-17"
@@ -202,19 +179,5 @@ data "aws_iam_policy_document" "assume-eks-admin" {
       type        = "AWS"
       identifiers = [format("arn:aws:iam::%s:root",data.aws_caller_identity.current.account_id)]
     }
-  }
-}
-
-// This namespace name is agreed by convention between the infra and app layers
-// Changing the name will break the test and subsequently whatever application.
-locals {
-  application-ns-name = "application"
-}
-resource "kubernetes_namespace_v1" "application" {
-  metadata {
-    labels = merge(local.tags,{
-      owner = "terraform"
-    })
-    name = local.application-ns-name
   }
 }
